@@ -8,105 +8,101 @@ Office.onReady((info) => {
   if (info.host === Office.HostType.Excel) {
     document.getElementById("sideload-msg").style.display = "none";
     document.getElementById("app-body").style.display = "flex";
-    document.getElementById("run").onclick = run;
-    // document.getElementById("getRange").onclick = rangeForData([
-    //   ["nguyen mau", "tuan2"],
-    //   ["nguyen mau", "tuan"],
-    // ]);
     document.getElementById("getRange").onclick = getRange;
   }
 });
-
-async function write(){
-  const data =  getRange;
-  // console.log(typeof data)
-  // document.getElementById('test').innerHTML = data;
-  console.log(data)
-}
-export async function run() {
+export async function getRange() {
   try {
     await Excel.run(async (context) => {
-      /**
-       * Insert your Excel code here
-       */
-      const range = context.workbook.getSelectedRange();
-
-      // Read the range address
+      const range = context.workbook.getSelectedRanges();
       range.load("address");
-
-      // Update the fill color
-      // range.format.fill.color = "black";
       await context.sync();
-      console.log(`${range.address}`);
+      // console.log(`${range.address}`);
+      const address = getAddress(range.address);
+      getTextFromRange(address);
+      // console.log(typeof arrName);
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
 }
-
-
-export async function  getRange(){
-try{
-    await Excel.run(async (context) => {
-    const range = context.workbook.getSelectedRanges();
-    range.load("address");
-    await context.sync();
-    // console.log(`${range.address}`);
-    const address=   getAddress(range.address);
-     getTextFromRange(address);
-    // console.log(typeof arrName);
-    
-  });
-} catch(error){
-  console.log(error);
-}}
-export function getAddress(range){
+export function getAddress(range) {
   const arrRange = range.split("!");
   return arrRange[1];
 }
 
 export async function getTextFromRange(address) {
-  try{
-    await Excel.run(async (context) =>{
-      let sheet = context.workbook.worksheets.getItem('Sheet1');
+  try {
+    await Excel.run(async (context) => {
+      let sheet = context.workbook.worksheets.getItem("Sheet1");
       let range = sheet.getRange(address);
       range.load("text");
       await context.sync();
-      let result = range.text
+      let result = range.text;
       handleTextName(result);
-    })
-  }catch(error) {
+    });
+  } catch (error) {
     console.log(error);
   }
 }
 
-const handleTextName = (arrayName) =>{
+const handleTextName = (arrayName) => {
   let range = [];
 
- arrayName.forEach(element =>seperateFullName(element[0].trim(), range));
-   
-}
+  arrayName.forEach((element) => seperateFullName(element[0].trim(), range));
+};
 
-const seperateFullName = (fullName,range) =>{
-  let data =[]
+const seperateFullName = (fullName, range) => {
+  let data = [];
+  const errorName = ["Họ và tên không hợp lệ", ""];
   let arrLastName = fullName.split(" ");
-  let firstName = arrLastName.splice(-1);
-  data.push(arrLastName.join(' '),firstName[0])
-  
-  range.push(data);
- console.log(range);
+  if (arrLastName.length >= 3){
+     for (let i = 0; i <= arrLastName.length; i++) {
+       if (!isValid(arrLastName[i])) {
+         range.push(errorName);
+         break;
+       } else {
+         if (i == arrLastName.length - 1) {
+           let firstName = arrLastName.splice(-1);
+           data.push(arrLastName.join(" "), firstName[0]);
+           range.push(data);
+           console.log(range);
+         }
+       }
+     }
+
+  }else{
+    range.push(errorName    );
+  }
+
+   
   rangeForData(range);
-  // range.push([arrLastName.join(" "), firstName[0]]);
-  // console.log(arrLastName.join(" "));
+};
+// const validateName = (arrFullName) =>{
+//   arrFullName.forEach((el)=>{
 
+//   })
+
+// }
+function removeAscent(str) {
+  if (str === null || str === undefined) return str;
+  str = str.toLowerCase();
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+  str = str.replace(/đ/g, "d");
+  return str;
 }
-
-
-
-
-async function rangeForData(valuesRange) { 
+function isValid(string) {
+  var re = /^[a-zA-Z!@#\$%\^\&*\)\(+=._-]{2,}$/g; // regex here
+  return re.test(removeAscent(string))
+}
+isValid(" triển");
+async function rangeForData(valuesRange) {
   try {
-    // console.log(valuesRange);
     await new Promise((resolve, reject) => {
       Office.context.document.bindings.addFromPromptAsync(
         Office.BindingType.Matrix,
@@ -131,4 +127,5 @@ async function rangeForData(valuesRange) {
     });
   } catch (error) {
     console.log(error);
-  }}
+  }
+}
