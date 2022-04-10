@@ -1,4 +1,9 @@
 {
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
+  },
   "name": "office-addin-taskpane-js",
   "version": "0.0.1",
   "repository": {
@@ -27,7 +32,11 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
+    "assert": "^2.0.0",
     "core-js": "^3.9.1",
+    "fs": "0.0.1-security",
+    "fs-extra": "^10.0.1",
+    "graceful-fs": "^4.2.10",
     "regenerator-runtime": "^0.13.7"
   },
   "devDependencies": {

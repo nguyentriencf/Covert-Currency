@@ -1,9 +1,15 @@
+// coding standard
+// coding convention
+// clean coding
+// refactoring code legacy code
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
  * See LICENSE in the project root for license information.
  */
 
 /* global console, document, Excel, Office */
+// const fse = require("fs-extra");
+const jsonData = require(".//uit_member.json");
 Office.onReady((info) => {
   if (info.host === Office.HostType.Excel) {
     document.getElementById("sideload-msg").style.display = "none";
@@ -13,6 +19,8 @@ Office.onReady((info) => {
 });
 export async function getRange() {
   try {
+console.log(jsonData);
+
     await Excel.run(async (context) => {
       const range = context.workbook.getSelectedRanges();
       range.load("address");
@@ -70,20 +78,12 @@ const seperateFullName = (fullName, range) => {
          }
        }
      }
-
   }else{
-    range.push(errorName    );
-  }
-
-   
+    range.push(errorName);
+  }  
   rangeForData(range);
 };
-// const validateName = (arrFullName) =>{
-//   arrFullName.forEach((el)=>{
 
-//   })
-
-// }
 function removeAscent(str) {
   if (str === null || str === undefined) return str;
   str = str.toLowerCase();
@@ -100,7 +100,6 @@ function isValid(string) {
   var re = /^[a-zA-Z!@#\$%\^\&*\)\(+=._-]{2,}$/g; // regex here
   return re.test(removeAscent(string))
 }
-isValid(" triển");
 async function rangeForData(valuesRange) {
   try {
     await new Promise((resolve, reject) => {
