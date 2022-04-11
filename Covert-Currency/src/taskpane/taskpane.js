@@ -19,8 +19,6 @@ Office.onReady((info) => {
 });
 export async function getRange() {
   try {
-console.log(jsonData);
-
     await Excel.run(async (context) => {
       const range = context.workbook.getSelectedRanges();
       range.load("address");
@@ -29,6 +27,7 @@ console.log(jsonData);
       const address = getAddress(range.address);
       getTextFromRange(address);
       // console.log(typeof arrName);
+      
     });
   } catch (error) {
     console.log(error);
@@ -66,16 +65,17 @@ const seperateFullName = (fullName, range) => {
   let arrLastName = fullName.split(" ");
   if (arrLastName.length >= 3){
      for (let i = 0; i <= arrLastName.length; i++) {
-       if (!isValid(arrLastName[i])) {
-         range.push(errorName);
-         break;
+      //  let lastNameGroup = arrLastName[0];
+       if (isValid(arrLastName[i]) && checkLastNameGroup(arrLastName[0])) {
+           if (i == arrLastName.length - 1) {
+             let firstName = arrLastName.splice(-1);
+             data.push(arrLastName.join(" "), firstName[0]);
+             range.push(data);
+             console.log(range);
+           } 
        } else {
-         if (i == arrLastName.length - 1) {
-           let firstName = arrLastName.splice(-1);
-           data.push(arrLastName.join(" "), firstName[0]);
-           range.push(data);
-           console.log(range);
-         }
+          range.push(errorName);
+         break;
        }
      }
   }else{
@@ -83,6 +83,14 @@ const seperateFullName = (fullName, range) => {
   }  
   rangeForData(range);
 };
+
+ function checkLastNameGroup(lastNameGroup){
+    jsonData.forEach((e) =>{
+     removeAscent(e.last_name_group) == removeAscent(lastNameGroup)?  true :false;
+    // console.log(removeAscent(e.last_name_group));
+    console.log(removeAscent(lastNameGroup));
+    })
+}
 
 function removeAscent(str) {
   if (str === null || str === undefined) return str;
@@ -100,6 +108,7 @@ function isValid(string) {
   var re = /^[a-zA-Z!@#\$%\^\&*\)\(+=._-]{2,}$/g; // regex here
   return re.test(removeAscent(string))
 }
+
 async function rangeForData(valuesRange) {
   try {
     await new Promise((resolve, reject) => {
