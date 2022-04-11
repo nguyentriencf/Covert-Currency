@@ -63,33 +63,32 @@ const seperateFullName = (fullName, range) => {
   let data = [];
   const errorName = ["Họ và tên không hợp lệ", ""];
   let arrLastName = fullName.split(" ");
-  if (arrLastName.length >= 3){
-     for (let i = 0; i <= arrLastName.length; i++) {
-      //  let lastNameGroup = arrLastName[0];
-       if (isValid(arrLastName[i]) && checkLastNameGroup(arrLastName[0])) {
-           if (i == arrLastName.length - 1) {
-             let firstName = arrLastName.splice(-1);
-             data.push(arrLastName.join(" "), firstName[0]);
-             range.push(data);
-             console.log(range);
-           } 
-       } else {
-          range.push(errorName);
-         break;
-       }
-     }
-  }else{
+  if (arrLastName.length >= 3 && checkLastNameGroup(arrLastName[0]) != null) {
+    for (let i = 0; i <= arrLastName.length; i++) {
+      if (isValid(arrLastName[i])) {
+        if (i == arrLastName.length - 1) {
+         filterFullNameToRange(arrLastName,data,range);
+        }
+      } else {
+        range.push(errorName);
+        break;
+      }
+    }
+  } else {
     range.push(errorName);
   }  
   rangeForData(range);
 };
 
+function filterFullNameToRange(arrLastName, data, range) {
+  let firstName = arrLastName.splice(-1);
+  data.push(arrLastName.join(" "), firstName[0]);
+  range.push(data);
+}
  function checkLastNameGroup(lastNameGroup){
-    jsonData.forEach((e) =>{
-     removeAscent(e.last_name_group) == removeAscent(lastNameGroup)?  true :false;
-    // console.log(removeAscent(e.last_name_group));
-    console.log(removeAscent(lastNameGroup));
-    })
+    return jsonData.find((e) =>
+      removeAscent(e.last_name_group) === removeAscent(lastNameGroup)
+    )
 }
 
 function removeAscent(str) {
