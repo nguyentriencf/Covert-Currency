@@ -7,8 +7,10 @@
  * See LICENSE in the project root for license information.
  */
 
+
 /* global console, document, Excel, Office */
 // const fse = require("fs-extra");
+let basePosition =0;
 const jsonData = require(".//uit_member.json");
 Office.onReady((info) => {
   if (info.host === Office.HostType.Excel) {
@@ -17,16 +19,19 @@ Office.onReady((info) => {
     document.getElementById("getRange").onclick = getRange;
   }
 });
+
 export async function getRange() {
   try {
     await Excel.run(async (context) => {
       const range = context.workbook.getSelectedRanges();
       range.load("address");
+  
       await context.sync();
-      // console.log(`${range.address}`);
+
+    
       const address = getAddress(range.address);
       getTextFromRange(address);
-      // console.log(typeof arrName);
+   
       
     });
   } catch (error) {
@@ -35,6 +40,12 @@ export async function getRange() {
 }
 export function getAddress(range) {
   const arrRange = range.split("!");
+  if(arrRange[1].includes(":")){
+  basePosition = arrRange[1].split(":")[0]
+  }else{
+    basePosition = arrRange[1];
+  }
+  console.log(basePosition);
   return arrRange[1];
 }
 
@@ -44,6 +55,7 @@ export async function getTextFromRange(address) {
       let sheet = context.workbook.worksheets.getItem("Sheet1");
       let range = sheet.getRange(address);
       range.load("text");
+      
       await context.sync();
       let result = range.text;
       handleTextName(result);
@@ -53,43 +65,40 @@ export async function getTextFromRange(address) {
   }
 }
 
-const handleTextName = (arrayName) => {
-  let range = [];
 
-  arrayName.forEach((element) => seperateFullName(element[0].trim(), range));
+const handleTextName = (arrayName) => {
+  let dataArr = [];
+
+  arrayName.forEach((element) => seperateFullName(element[0].trim(), dataArr));
 };
 
-const seperateFullName = (fullName, range) => {
+const seperateFullName = (fullName, dataArr) => {
   let data = [];
-  const errorName = ["Họ và tên không hợp lệ", ""];
+  const errorName = ["=#Name?"];
   let arrLastName = fullName.split(" ");
-  if (arrLastName.length >= 3 && checkLastNameGroup(arrLastName[0]) != null) {
+  if (arrLastName.length >= 2) {
     for (let i = 0; i <= arrLastName.length; i++) {
       if (isValid(arrLastName[i])) {
         if (i == arrLastName.length - 1) {
-         filterFullNameToRange(arrLastName,data,range);
+          filterFullNameToRange(arrLastName, data, dataArr);
         }
       } else {
-        range.push(errorName);
+        dataArr.push(errorName);
         break;
       }
     }
   } else {
-    range.push(errorName);
-  }  
-  rangeForData(range);
+    dataArr.push(errorName);
+  }
+  rangeForData(dataArr);
 };
 
-function filterFullNameToRange(arrLastName, data, range) {
+function filterFullNameToRange(arrLastName, data, dataArr) {
   let firstName = arrLastName.splice(-1);
   data.push(arrLastName.join(" "), firstName[0]);
-  range.push(data);
+  dataArr.push(data);
 }
- function checkLastNameGroup(lastNameGroup){
-    return jsonData.find((e) =>
-      removeAscent(e.last_name_group) === removeAscent(lastNameGroup)
-    )
-}
+
 
 function removeAscent(str) {
   if (str === null || str === undefined) return str;
@@ -126,13 +135,42 @@ async function rangeForData(valuesRange) {
     await Excel.run(async (context) => {
       let binding = context.workbook.bindings.getItem("currencyRange");
       let range = binding.getRange();
+        range.dataValidation.prompt = {
+          message: "error test",
+          showPrompt: true, // The default is 'false'.
+          title: "Positive Whole Numbers Only.",
+        };
       range.load("address");
       let resizeRange = range.getResizedRange(valuesRange.length - 1, valuesRange[0].length - 1);
+        const positionInvalids = getPositionInvalid(valuesRange);
+        let arrFormatPositionInvalid = [];
+        if(positionInvalids.length > 0){
+            positionInvalids.forEach(e => {
+              let positionInvalid= basePosition.substring(1);
+              let stringPosition = basePosition.substring(0,1);
+              let totalPositionInvalid= parseInt(positionInvalid) + e;
+              let result = `${stringPosition}${totalPositionInvalid}`;
+              arrFormatPositionInvalid.push(result);
+            })
+        }
+        console.log(arrFormatPositionInvalid);
       resizeRange.getCell().format.horizontalAlignment = Excel.HorizontalAlignment.center;
       resizeRange.values = valuesRange;
       await context.sync();
+     // console.log(range.address)
     });
   } catch (error) {
     console.log(error);
   }
 }
+
+function getPositionInvalid(valueRange){
+  let result =[];
+  valueRange.forEach((e,index)=>{
+      if(e.length <=1){
+        result.push(index)
+      } 
+  })
+  return result;
+}
+
