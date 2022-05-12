@@ -12,11 +12,10 @@ let characterUnwanted = document.getElementById("inputCharacter").value;
        document.getElementById("notifyInvalid").hidden = false;
   }else{
            document.getElementById("notifyInvalid").hidden = true;
-
-      let arrStrCharacter = [];
+    let arrStrCharacter = [];
       let arrayDataSelecteds = await ReturnArrayDataFromCells();
       arrayDataSelecteds.map((element) => {
-        element.map((strCharacter) => {
+         element.map((strCharacter) => {
           strCharacter.includes(characterUnwanted)
             ? (strCharacter = recursionString(characterUnwanted, strCharacter))
             : strCharacter;
@@ -24,9 +23,7 @@ let characterUnwanted = document.getElementById("inputCharacter").value;
         });
       });
       await fillData(arrStrCharacter);
-
   }
-
 }
 
 function characterWanted(characterUnwanted, strCharacter) {
@@ -86,16 +83,14 @@ async function fillData(valuesRange) {
   try {
     await Excel.run(async (context) => {
       let sheet = context.workbook.worksheets.getItem("Sheet1");
-      arrCellSelected = addressGlobal.split(':');
-      arrCellSelected.length > 1 ? addressGlobal= arrCellSelected[0] : addressGlobal;
-      let range = sheet.getRange(addressGlobal);
+      // arrCellSelected = addressGlobal.split(':');
+      // arrCellSelected.length > 1 ? addressGlobal= arrCellSelected[0] : addressGlobal;
       console.log(addressGlobal);
-      console.log(valuesRange);
-      range.load("address");
-      let resizeRange = range.getResizedRange(valuesRange.length - 1, valuesRange[0].length - 1);
-      // resizeRange.getCell().format.horizontalAlignment = Excel.HorizontalAlignment.center;
-      // resizeRange.values = [["Nguyễn văn èo  "], ["Phạm Anh quốc  "]];
-     resizeRange.values = valuesRange;
+      let range = sheet.getRange(addressGlobal);
+     range.values = [['2',2]];
+    //   range.load("address");
+    //   let resizeRange = range.getResizedRange(valuesRange.length - 1, valuesRange[0].length - 1);
+    //  resizeRange.values = valuesRange;
       await context.sync();
     });
   } catch (error) {
